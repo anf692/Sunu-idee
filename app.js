@@ -68,7 +68,7 @@ function afficherIdee(idee) {
         <p class="description">${idee.description}</p>
         <div class="card-actions">
         <button class="btn-editer" onclick="editerIdee(${idee.id})">Éditer</button>
-        <button class="btn-supprimer">Supprimer</button>
+        <button class="btn-supprimer" onclick="supprimerIdee(${idee.id})">Supprimer</button>
         </div>
     </div>
   `;
@@ -101,4 +101,19 @@ function editerIdee(id) {
   document.getElementById("Description").value = idee.description;
   idEnEdition = id;
 }
+
+function supprimerIdee(id) {
+  if (confirm("Êtes-vous sûr de vouloir supprimer cette idée ?")) {
+    // Supprime l'idée du tableau et met à jour le localStorage
+    ideas = ideas.filter((idee) => idee.id !== id);
+    localStorage.setItem("ideas", JSON.stringify(ideas));
+
+    // Recharge le mur des idées
+    murIdees.innerHTML = "";
+    ideas.forEach((idee) => {
+      afficherIdee(idee);
+    });
+  }
+}
+
 
