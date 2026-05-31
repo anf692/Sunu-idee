@@ -3,6 +3,8 @@ const form = document.getElementById("Formulaire");
 const murIdees = document.getElementById("MurIdees");
 let ideas = [];
 
+let idEnEdition = null; // Variable pour suivre l'idée en cours d'édition
+
 
 // Écouteur d'événement pour le formulaire
 form.addEventListener("submit", function(event) {
@@ -13,12 +15,29 @@ form.addEventListener("submit", function(event) {
   const categorie = document.getElementById("Categorie").value;
   const description = document.getElementById("Description").value;
 
-  const nouvelleIdee = { id: Date.now(), titre, categorie, description };
+  if (idEnEdition !== null) {
+    ideas = ideas.map((idee) => {
+      if (idee.id === idEnEdition) {
+        return { id: idEnEdition, titre, categorie, description }; // complète avec titre, categorie, description
+      }
+      return idee;  // les autres idées restent inchangées
+    });
 
-  // Ajoute la nouvelle idée à la liste et met à jour le localStorage
-  ideas.push(nouvelleIdee);
+    idEnEdition = null;  // remet en mode création
+
+  } else {
+    // Crée une nouvelle idée avec un ID unique
+    const nouvelleIdee = { id: Date.now(), titre, categorie, description };
+    ideas.push(nouvelleIdee);
+
+  }
+
+  // Sauvegarde les idées dans le localStorage
   localStorage.setItem("ideas", JSON.stringify(ideas));
-  afficherIdee(nouvelleIdee);
+  murIdees.innerHTML = ""; // Vide le mur des idées avant de le recharger
+  ideas.forEach((idee) => {
+    afficherIdee(idee);
+  });
 
   // Réinitialise les champs du formulaire
   document.getElementById("Titre").value = "";
@@ -48,11 +67,11 @@ function afficherIdee(idee) {
         <h3>${idee.titre}</h3>
         <p class="description">${idee.description}</p>
         <div class="card-actions">
-        <button class="btn-editer">Éditer</button>
+        <button class="btn-editer" onclick="editerIdee(${idee.id})">Éditer</button>
         <button class="btn-supprimer">Supprimer</button>
         </div>
     </div>
-    `;
+  `;
   murIdees.appendChild(carte); // ajoute la carte dans le mur
 }
 
@@ -69,6 +88,17 @@ function chargerIdees() {
   }
 }
 
-chargerIdees(); // appelée au démarrageconst form = document.getElementById("Formulaire");
+chargerIdees(); // appelée au démarrage
 
+
+// Fonction pour éditer une idée
+function editerIdee(id) {
+  const idee = ideas.find((i) => {
+    return i.id === id;
+  });
+  document.getElementById("Titre").value = idee.titre;
+  document.getElementById("Categorie").value = idee.categorie;
+  document.getElementById("Description").value = idee.description;
+  idEnEdition = id;
+}
 
