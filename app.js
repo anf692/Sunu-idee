@@ -15,6 +15,13 @@ form.addEventListener("submit", function(event) {
   const categorie = document.getElementById("Categorie").value;
   const description = document.getElementById("Description").value;
 
+
+  // Validation : Vérifie que le titre et la description ne sont pas vides
+  if (titre.trim() === "" || description.trim() === "") {
+    alert(" Le titre et la description sont obligatoires !");
+    return; // stoppe la fonction ici
+  }
+
   if (idEnEdition !== null) {
     ideas = ideas.map((idee) => {
       if (idee.id === idEnEdition) {
@@ -117,3 +124,89 @@ function supprimerIdee(id) {
 }
 
 
+ 
+const btnIA = document.getElementById("btnIA");
+
+btnIA.addEventListener("click", async () => {
+
+  const titre = document.getElementById("Titre").value;
+
+  if (!titre.trim()) {
+    alert("Saisissez un titre");
+    return;
+  }
+
+  try{
+
+    btnIA.disabled = true;
+    btnIA.textContent = "Génération...";
+
+    const response = await fetch(
+    "http://localhost:11434/api/generate",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama3:latest",
+        prompt: `
+      Tu es un assistant pour une boîte à idées.
+
+    Titre : ${titre}
+
+    Choisis une catégorie parmi :
+    - Pédagogie
+    - Événement
+    - Vie de campus
+    - Technologie
+    - Autre
+
+    Puis rédige une description :
+
+    - claire
+    - professionnelle
+    - entre 20 et 40 mots
+    - expliquant l'objectif de l'idée
+    - sans liste à puces
+
+    Réponds sur 2 lignes seulement :
+
+    Categorie
+    Description
+  `,
+          stream: false
+        })
+      }
+    );
+
+    
+
+    const data = await response.json();
+
+    const lignes = data.response.trim().split("\n");
+
+    document.getElementById("Categorie").value =
+      lignes[0].trim();
+
+    document.getElementById("Description").value =
+      lignes.slice(1).join(" ").trim();
+
+    } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Erreur lors de la communication avec Ollama"
+    );
+
+    } finally {
+
+      btnIA.disabled = false;
+      btnIA.textContent =
+        "🤖 Générer avec IA";
+    }
+
+  
+
+});

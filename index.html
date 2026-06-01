@@ -32,11 +32,25 @@
             <form id="Formulaire">
               <div class="mb-3">
                 <label class="form-label" for="Titre">Titre</label>
-                <input type="text" class="form-control" id="Titre" placeholder="Titre de l'idée..." />
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="Titre"
+                  placeholder="Titre de l'idée..."
+                />
               </div>
+
+              <button
+                type="button"
+                id="btnIA"
+                class="btn btn-secondary w-100 mb-3">
+                🤖 Générer avec IA
+              </button>
               <div class="mb-3">
                 <label class="form-label" for="Categorie">Catégorie</label>
-                <select class="form-select" id="Categorie">
+                <select class="form-select" id="Categorie" required>
+                  <option value="">Sélectionnez une catégorie</option>
                   <option value="Pédagogie">Pédagogie</option>
                   <option value="Événement">Événement</option>
                   <option value="Vie de campus">Vie de campus</option>
@@ -46,7 +60,7 @@
               </div>
               <div class="mb-4">
                 <label class="form-label" for="Description">Description</label>
-                <textarea class="form-control" id="Description" rows="5" placeholder="Décrivez votre idée..."></textarea>
+                <textarea class="form-control" id="Description" rows="5" placeholder="Décrivez votre idée..." required></textarea>
               </div>
               <button type="submit" class="btn-soumettre">Soumettre</button>
             </form>
@@ -79,3 +93,5 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
+
