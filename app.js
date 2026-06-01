@@ -124,3 +124,55 @@ function supprimerIdee(id) {
 }
 
 
+// Écouteur d'événement pour le bouton de suggestion IA
+document.getElementById("btnSuggerer").addEventListener("click", async function () {
+  const titre = document.getElementById("Titre").value;
+
+  // Validation : Vérifie que le titre n'est pas vide
+  if (titre.trim() === "") {
+    alert("Écris d'abord un titre !");
+    return;
+  }
+
+  // Affiche le loader
+  document.getElementById("loadingIA").style.display = "block";
+  document.getElementById("btnSuggerer").disabled = true;
+
+  // Appelle l'API Ollama pour générer une suggestion basée sur le titre
+  try {
+    const response = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "mistral",
+        stream: false,
+        prompt: `Tu es un assistant pour une boîte à idées scolaire appelée Sunu-Idées.
+  L'utilisateur a écrit ce titre : "${titre}"
+
+  Réponds UNIQUEMENT en JSON valide, sans explication, sans markdown, sans backticks :
+  {
+    "categorie": "une seule valeur parmi : Pédagogie, Événement, Vie de campus, Technologie, Autre",
+    "description": "une description courte de 2 phrases maximum en français"
+  }`
+        })
+      });
+
+      const data = await response.json();
+      
+      // Nettoie la réponse au cas où Mistral ajoute des backticks
+      const clean = data.response.replace(/```json|```/g, "").trim();
+      const suggestion = JSON.parse(clean);
+
+      document.getElementById("Categorie").value = suggestion.categorie;
+      document.getElementById("Description").value = suggestion.description;
+
+    } catch (e) {
+      alert("Ollama ne répond pas. Vérifie que 'ollama serve' est lancé dans ton terminal.");
+    } finally {
+      // Cache le loader dans tous les cas
+      document.getElementById("loadingIA").style.display = "none";
+      document.getElementById("btnSuggerer").disabled = false;
+    }
+});
+
+
