@@ -142,5 +142,5 @@ L'application se présente sous la forme :
 
 ## Auteur
 
-Projet réalisé dans le cadre de la formation Développeur Front-End chez Simplon.
+Projet réalisé dans le cadre de la formation Développeur Web / web mobile + IA chez Simplon.
 
