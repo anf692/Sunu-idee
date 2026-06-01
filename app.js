@@ -134,8 +134,8 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
     return;
   }
 
-  // Affiche le loader
-  document.getElementById("loadingIA").style.display = "block";
+  // Affiche le loader et désactive le bouton pour éviter les clics multiples
+  document.getElementById("btnSuggerer").textContent = "⏳ L'IA génère une suggestion...";
   document.getElementById("btnSuggerer").disabled = true;
 
   // Appelle l'API Ollama pour générer une suggestion basée sur le titre
@@ -169,10 +169,10 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
     } catch (e) {
       alert("Ollama ne répond pas. Vérifie que 'ollama serve' est lancé dans ton terminal.");
     } finally {
-      // Cache le loader dans tous les cas
-      document.getElementById("loadingIA").style.display = "none";
+      // Cache le loader dans tous les cas et réactive le bouton
+      document.getElementById("btnSuggerer").textContent = "Suggérer avec l'IA";
       document.getElementById("btnSuggerer").disabled = false;
-    }
+    } 
 });
 
 
