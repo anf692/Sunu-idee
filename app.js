@@ -15,6 +15,13 @@ form.addEventListener("submit", function(event) {
   const categorie = document.getElementById("Categorie").value;
   const description = document.getElementById("Description").value;
 
+
+  // Validation : Vérifie que le titre et la description ne sont pas vides
+  if (titre.trim() === "" || description.trim() === "") {
+    alert(" Le titre et la description sont obligatoires !");
+    return; // stoppe la fonction ici
+  }
+
   if (idEnEdition !== null) {
     ideas = ideas.map((idee) => {
       if (idee.id === idEnEdition) {
