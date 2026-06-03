@@ -27,22 +27,35 @@ form.addEventListener("submit", async function(event) {
     return; // stoppe la fonction ici
   }
 
+  // Validation : Vérifie que la catégorie est valide
+  if (!["Pédagogie", "Événement", "Vie de campus", "Technologie", "Autre"].includes(categorie)) {
+    alert("Catégorie invalide !");
+    return;
+  }
+
+  // Si idEnEdition n'est pas null, on met à jour l'idée existante, sinon on en crée une nouvelle
   if (idEnEdition !== null) {
-    const { error } = await supabaseClient
+    const { error } = await supabaseClient 
     .from("idees")
     .update({ titre, categorie, description })
-    .eq("id", idEnEdition);
+    .eq("id", idEnEdition); // met à jour l'idée avec l'id correspondant
+
+    if (error) {
+      console.error("Erreur mise à jour :", error);
+      return;
+    }
 
     idEnEdition = null;
     await chargerIdees();
 
   } else {
     
+    // Insère une nouvelle idée dans la table "idees" de Supabase
     const { data, error } = await supabaseClient
     .from("idees")
     .insert([{ titre, categorie, description }]);
 
-    await chargerIdees();
+    await chargerIdees();// recharge le mur pour afficher la nouvelle idée
 
   }
 
@@ -106,7 +119,7 @@ async function editerIdee(id) {
     .from("idees")
     .select("*")
     .eq("id", id)
-    .single();
+    .single(); // récupère une seule idée avec l'id correspondant
 
   if (error) { console.error("Erreur édition :", error); return; }
 
