@@ -1,14 +1,18 @@
+const SUPABASE_URL = "https://gydmfdpximufssjitxkb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5ZG1mZHB4aW11ZnNzaml0eGtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTc3MzEsImV4cCI6MjA5NjA3MzczMX0.v_gQemOjn4EP4KPOnL7gheGd41fxqsVdelHnIiDIgCQ"; 
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // Récupère les éléments du DOM
 const form = document.getElementById("Formulaire");
 const murIdees = document.getElementById("MurIdees");
-let ideas = [];
 
 
 let idEnEdition = null; // Variable pour suivre l'idée en cours d'édition
 
 
 // Écouteur d'événement pour le formulaire
-form.addEventListener("submit", function(event) {
+form.addEventListener("submit", async function(event) {
   event.preventDefault(); // Empêche le rechargement de la page
 
   // Récupère les valeurs des champs du formulaire
@@ -24,34 +28,28 @@ form.addEventListener("submit", function(event) {
   }
 
   if (idEnEdition !== null) {
-    ideas = ideas.map((idee) => {
-      if (idee.id === idEnEdition) {
-        return { id: idEnEdition, titre, categorie, description }; // complète avec titre, categorie, description
-      }
-      return idee;  // les autres idées restent inchangées
-    });
+    const { error } = await supabaseClient
+    .from("idees")
+    .update({ titre, categorie, description })
+    .eq("id", idEnEdition);
 
-    idEnEdition = null;  // remet en mode création
+    idEnEdition = null;
+    await chargerIdees();
 
   } else {
-    // Crée une nouvelle idée avec un ID unique
-    const nouvelleIdee = { id: Date.now(), titre, categorie, description };
-    ideas.push(nouvelleIdee);
+    
+    const { data, error } = await supabaseClient
+    .from("idees")
+    .insert([{ titre, categorie, description }]);
+
+    await chargerIdees();
 
   }
 
-  // Sauvegarde les idées dans le localStorage
-  localStorage.setItem("ideas", JSON.stringify(ideas));
-  murIdees.innerHTML = ""; // Vide le mur des idées avant de le recharger
-  ideas.forEach((idee) => {
-    afficherIdee(idee);
-  });
-
   // Réinitialise les champs du formulaire
-  document.getElementById("Titre").value = "";
-  document.getElementById("Categorie").value = "Pédagogie";
-  document.getElementById("Description").value = "";
-  console.log(ideas); // Pour tester
+  form.reset();
+  
+  console.log("Idée soumise avec succès !");
 });
 
 
@@ -84,44 +82,53 @@ function afficherIdee(idee) {
 }
 
 
-// Fonction pour charger les idées depuis le localStorage au démarrage
-function chargerIdees() {
-  const data = localStorage.getItem("ideas");
-  
-  if (data) {
-    ideas = JSON.parse(data);
-    ideas.forEach(function(idee) {
-      afficherIdee(idee); // affiche chaque idée
-    });
+// Fonction pour charger les idées depuis Supabase et les afficher
+async function chargerIdees() {
+  const { data, error } = await supabaseClient
+    .from("idees")  
+    .select("*");
+
+  if (error) {
+    console.error("Erreur chargement :", error);
+    return;
   }
+
+  murIdees.innerHTML = "";
+  data.forEach((idee) => afficherIdee(idee));
 }
 
 chargerIdees(); // appelée au démarrage
 
 
 // Fonction pour éditer une idée
-function editerIdee(id) {
-  const idee = ideas.find((i) => {
-    return i.id === id;
-  });
-  document.getElementById("Titre").value = idee.titre;
-  document.getElementById("Categorie").value = idee.categorie;
-  document.getElementById("Description").value = idee.description;
+async function editerIdee(id) {
+  const { data, error } = await supabaseClient
+    .from("idees")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) { console.error("Erreur édition :", error); return; }
+
+  document.getElementById("Titre").value = data.titre;
+  document.getElementById("Categorie").value = data.categorie;
+  document.getElementById("Description").value = data.description;
   idEnEdition = id;
 }
 
-function supprimerIdee(id) {
-  if (confirm("Êtes-vous sûr de vouloir supprimer cette idée ?")) {
-    // Supprime l'idée du tableau et met à jour le localStorage
-    ideas = ideas.filter((idee) => idee.id !== id);
-    localStorage.setItem("ideas", JSON.stringify(ideas));
+// Fonction pour supprimer une idée
+async function supprimerIdee(id) {
+  const { error } = await supabaseClient
+    .from("idees")
+    .delete()
+    .eq("id", id);
 
-    // Recharge le mur des idées
-    murIdees.innerHTML = "";
-    ideas.forEach((idee) => {
-      afficherIdee(idee);
-    });
+  if (error) {
+    console.error("Erreur suppression :", error);
+    return;
   }
+
+  await chargerIdees(); // recharge le mur
 }
 
 
@@ -147,7 +154,7 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b:freeze-2024-06-01",
+        model: "google/gemma-4-31b-it:freeze-2024-06-01",
         messages: [{
            role: "user",
         content: `Tu es un assistant pour une boîte à idées scolaire appelée Sunu-Idées.
@@ -181,7 +188,9 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
       document.getElementById("Description").value = suggestion.description;
 
     } catch (e) {
-      alert("Erreur API OpenRouter !");
+      document.getElementById("Categorie").value = "Amélioration technique";
+      document.getElementById("Description").value = "Description à compléter.";
+      console.warn("Fallback activé :", e);
     } finally {
       // Cache le loader dans tous les cas et réactive le bouton
       document.getElementById("btnSuggerer").textContent = "Suggérer avec l'IA";
