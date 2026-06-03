@@ -3,6 +3,7 @@ const form = document.getElementById("Formulaire");
 const murIdees = document.getElementById("MurIdees");
 let ideas = [];
 
+
 let idEnEdition = null; // Variable pour suivre l'idée en cours d'édition
 
 
@@ -140,13 +141,17 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
 
   // Appelle l'API Ollama pour générer une suggestion basée sur le titre
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Authorization": `Bearer ${meta.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        model: "mistral",
-        stream: false,
-        prompt: `Tu es un assistant pour une boîte à idées scolaire appelée Sunu-Idées.
+        model: "openai/gpt-oss-20b:freeze-2024-06-01",
+        messages: [{
+           role: "user",
+        content: `Tu es un assistant pour une boîte à idées scolaire appelée Sunu-Idées.
   L'utilisateur a écrit ce titre : "${titre}"
 
   Réponds UNIQUEMENT en JSON valide, sans explication, sans markdown, sans backticks :
@@ -154,20 +159,30 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
     "categorie": "une seule valeur parmi : Pédagogie, Événement, Vie de campus, Technologie, Autre",
     "description": "une description courte de 2 phrases maximum en français"
   }`
-        })
-      });
+        }],
+
+        // Active le mode de raisonnement pour que Mistral explique sa suggestion avant de donner la réponse finale
+        "reasoning": {"enabled": true}
+        
+    }),
+    });
 
       const data = await response.json();
+
+      console.log(data);
+
+      //
+      const raw = data.choices[0].message.content;
       
       // Nettoie la réponse au cas où Mistral ajoute des backticks
-      const clean = data.response.replace(/```json|```/g, "").trim();
+      const clean = raw.replace(/```json|```/g, "").trim();
       const suggestion = JSON.parse(clean);
 
       document.getElementById("Categorie").value = suggestion.categorie;
       document.getElementById("Description").value = suggestion.description;
 
     } catch (e) {
-      alert("Ollama ne répond pas. Vérifie que 'ollama serve' est lancé dans ton terminal.");
+      alert("Erreur API OpenRouter !");
     } finally {
       // Cache le loader dans tous les cas et réactive le bouton
       document.getElementById("btnSuggerer").textContent = "Suggérer avec l'IA";
