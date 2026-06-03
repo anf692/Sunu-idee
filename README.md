@@ -11,7 +11,7 @@ et la description d'une idée.
 ---
 
 ## Lien de déploiement
-[___ https://sunu-idee-enmi.vercel.app/ ___]
+[Voir l'application](https://sunu-idee-enmi.vercel.app/)
 
 ---
 
@@ -71,6 +71,6 @@ sunu-idees/
 ---
 
 ## 👥 Auteurs
-___ M. Assane Ndong FALL et M. Abdoulaye NDIAYE ___
+__ M. Assane Ndong FALL et M. Abdoulaye NDIAYE __
 Projet réalisé dans le cadre de la formation 
 Développeur Web / Web Mobile + IA chez Simplon.
