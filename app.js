@@ -141,10 +141,9 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
 
   // Appelle l'API Ollama pour générer une suggestion basée sur le titre
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("/api/ai", {
       method: "POST",
       headers: { 
-        "Authorization": `Bearer ${meta.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
