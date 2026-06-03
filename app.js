@@ -131,6 +131,10 @@ async function editerIdee(id) {
 
 // Fonction pour supprimer une idée
 async function supprimerIdee(id) {
+  
+  const confirmation = confirm("Es-tu sûr de vouloir supprimer cette idée ?");
+  if (!confirmation) return;
+
   const { error } = await supabaseClient
     .from("idees")
     .delete()
