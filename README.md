@@ -1,146 +1,76 @@
-````md
-# Sunu-Idées
+# 💡 Sunu-Idées
 
-##  Description
-
-**Sunu-Idées** est une boîte à idées numérique, anonyme et collaborative permettant aux apprenants, formateurs et membres du staff de proposer, consulter, modifier et supprimer des idées de manière simple et instantanée.
-
-L'application repose sur le principe de l'intelligence collective et ne nécessite aucune authentification. Toutes les données sont sauvegardées localement grâce au **LocalStorage** afin de garantir leur persistance même après la fermeture du navigateur.
-
----
-
-## Objectifs du projet
-
-- Permettre à chaque utilisateur de soumettre une idée.
-- Afficher dynamiquement toutes les idées sous forme de cartes.
-- Modifier une idée existante.
-- Supprimer une idée devenue inutile ou déjà traitée.
-- Sauvegarder automatiquement les données dans le navigateur.
-- Offrir une expérience fluide sans rechargement de page.
+## Description
+**Sunu-Idées** est une boîte à idées numérique, anonyme et collaborative 
+permettant aux apprenants de proposer, consulter, modifier et supprimer 
+des idées en temps réel. Les données sont stockées dans le cloud via 
+**Supabase** et accessibles par toute la promo. L'application utilise 
+**OpenRouter (Mistral 7B)** pour suggérer automatiquement la catégorie 
+et la description d'une idée.
 
 ---
 
-## 🛠️ Technologies utilisées
+## Lien de déploiement
+[___ https://sunu-idee-enmi.vercel.app/ ___]
 
-- HTML5
-- CSS3
-- Bootstrap 5
-- JavaScript (Vanilla JS)
-- LocalStorage
+---
+
+## Technologies utilisées
+- HTML5 sémantique
+- CSS3 + Bootstrap 5
+- JavaScript ES6+ (Vanilla JS)
+- Supabase (base de données cloud)
+- OpenRouter API (IA - Mistral 7B gratuit)
+- Vercel (déploiement + proxy API)
 
 ---
 
 ## Fonctionnalités
-
-###  CREATE - Ajouter une idée
-
-Un formulaire permet de soumettre une nouvelle idée contenant :
-
-- Titre
-- Catégorie
-- Description
-
-Catégories disponibles :
-
--  Pédagogie
--  Événement
--  Vie de campus
--  Amélioration technique
+- ➕ Soumettre une idée anonymement
+- 👁️ Afficher toutes les idées de la promo en temps réel
+- ✏️ Modifier une idée existante
+- 🗑️ Supprimer une idée
+- 🤖 Suggestion automatique par IA (catégorie + description)
+- 🔄 Zéro rechargement de page (SPA)
 
 ---
 
-###  READ - Afficher les idées
+## 🤖 Intelligence Artificielle
+L'application interroge **OpenRouter** (modèle `mistralai/mistral-7b-instruct:free`) 
+à partir du titre saisi. L'IA suggère automatiquement :
+- La catégorie la plus adaptée
+- Une description en 2 phrases
 
-Toutes les idées sont affichées sous forme de cartes dynamiques.
-
-Chaque carte affiche :
-
-- Le titre
-- La catégorie
-- La description
-- Une couleur spécifique selon la catégorie
+En cas d'indisponibilité de l'IA, un **fallback automatique** attribue 
+la catégorie "Amélioration technique".
 
 ---
 
-###  UPDATE - Modifier une idée
-
-Chaque carte possède un bouton **Éditer** permettant de :
-
-- Modifier le titre
-- Modifier la description
-
-Les changements sont immédiatement enregistrés dans le LocalStorage.
-
----
-
-### DELETE - Supprimer une idée
-
-Chaque carte possède un bouton **Supprimer** permettant de :
-
-- Retirer définitivement une idée
-- Mettre à jour automatiquement le LocalStorage
-
----
-
-##  Persistance des données
-
-Les idées sont enregistrées dans le navigateur grâce au **LocalStorage**.
-
-Ainsi :
-
- Les idées restent disponibles après actualisation de la page.
-
- Les idées sont conservées après fermeture du navigateur.
+## Base de données Supabase
+Les idées sont stockées dans une table `idees` avec :
+- `id` — identifiant unique auto-généré
+- `titre` — titre de l'idée
+- `categorie` — catégorie assignée
+- `description` — description détaillée
+- `created_at` — date de création
 
 ---
 
 ## Structure du projet
-
 ```text
 sunu-idees/
 │
+├── api/
+│   └── ai.js          ← Proxy OpenRouter (Vercel)
 ├── index.html
 ├── style.css
 ├── app.js
 └── README.md
-````
-
----
-
-##  Installation
-
-1. Cloner le projet :
-
-```bash
-git clone https://github.com/votre-compte/sunu-idees.git
-```
-
-2. Ouvrir le dossier :
-
-```bash
-cd sunu-idees
-```
-
-3. Lancer l'application :
-
-```bash
-Ouvrir index.html dans le navigateur
 ```
 
 ---
 
-## Aperçu
-
-L'application se présente sous la forme :
-
-* D'un formulaire de soumission d'idées
-* D'un tableau d'affichage dynamique
-* De cartes colorées représentant les différentes catégories
-
----
-
-
-## Auteur
-
-Projet réalisé dans le cadre de la formation Développeur Web / web mobile + IA chez Simplon.
-
+## 👥 Auteurs
+___ M. Assane Ndong FALL et M. Abdoulaye NDIAYE ___
+Projet réalisé dans le cadre de la formation 
+Développeur Web / Web Mobile + IA chez Simplon.
