@@ -1,19 +1,25 @@
+const SUPABASE_URL = "https://jcoyeikgwwrdxpfatxyw.supabase.co"; // identifiant
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impjb3llaWtnd3dyZHhwZmF0eHl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTY4MTAsImV4cCI6MjA5NjA3MjgxMH0.XAFZ37FF-vgbqGkn-r0lgDcFKjZgBl_yggacse_yBFA"
+
+const supabaseClient = supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+
 // Récupère les éléments du DOM
 const form = document.getElementById("Formulaire");
 const murIdees = document.getElementById("MurIdees");
-let ideas = [];
 
 let idEnEdition = null; // Variable pour suivre l'idée en cours d'édition
 
 
 // Écouteur d'événement pour le formulaire
-form.addEventListener("submit", function(event) {
+form.addEventListener("submit", async function(event) {
   event.preventDefault(); // Empêche le rechargement de la page
 
   // Récupère les valeurs des champs du formulaire
   const titre = document.getElementById("Titre").value;
   const categorie = document.getElementById("Categorie").value;
   const description = document.getElementById("Description").value;
+  
 
 
   // Validation : Vérifie que le titre et la description ne sont pas vides
@@ -22,35 +28,44 @@ form.addEventListener("submit", function(event) {
     return; // stoppe la fonction ici
   }
 
-  if (idEnEdition !== null) {
-    ideas = ideas.map((idee) => {
-      if (idee.id === idEnEdition) {
-        return { id: idEnEdition, titre, categorie, description }; // complète avec titre, categorie, description
-      }
-      return idee;  // les autres idées restent inchangées
-    });
-
-    idEnEdition = null;  // remet en mode création
-
-  } else {
-    // Crée une nouvelle idée avec un ID unique
-    const nouvelleIdee = { id: Date.now(), titre, categorie, description };
-    ideas.push(nouvelleIdee);
-
+  if(!["Pédagogie","Événement","Vie de campus","Technologie","Autre"].includes(categorie)){
+    alert('veuiller respecter le nom du champ categorie');
+    return;
   }
 
-  // Sauvegarde les idées dans le localStorage
-  localStorage.setItem("ideas", JSON.stringify(ideas));
-  murIdees.innerHTML = ""; // Vide le mur des idées avant de le recharger
-  ideas.forEach((idee) => {
-    afficherIdee(idee);
-  });
+  if (idEnEdition !== null) {
+    const {error} =await supabaseClient
+    .from('sunu-idee')
+    .update({titre,categorie,description})
+    .eq('id',idEnEdition)
+
+    if (error){
+      console.error('mise a jour',  error);
+      return;
+    }
+
+    idEnEdition = null; 
+    await chargerIdees();
+    
+  } 
+  else {
+
+    const {data, error} = await supabaseClient
+    .from("sunu-idee")
+    .insert([{
+      titre,categorie,description
+    }]);  
+
+    if (error){
+      console.error("erreur lors de l'ajout", error);
+    }
+
+    await chargerIdees();
+  }
 
   // Réinitialise les champs du formulaire
-  document.getElementById("Titre").value = "";
-  document.getElementById("Categorie").value = "Pédagogie";
-  document.getElementById("Description").value = "";
-  console.log(ideas); // Pour tester
+  form.reset()
+
 });
 
 
@@ -83,44 +98,66 @@ function afficherIdee(idee) {
 }
 
 
-// Fonction pour charger les idées depuis le localStorage au démarrage
-function chargerIdees() {
-  const data = localStorage.getItem("ideas");
-  
-  if (data) {
-    ideas = JSON.parse(data);
-    ideas.forEach(function(idee) {
-      afficherIdee(idee); // affiche chaque idée
-    });
+// Fonction pour charger les idées depuis le SUPABASE au démarrage
+async function chargerIdees() {
+  const { data, error } = await supabaseClient
+  .from('sunu-idee')
+  .select('*')
+
+  if(error){
+    console.error("erreur chargement", error);
+    return
   }
+
+  murIdees.innerHTML ="";
+
+  data.forEach(function(idee){
+    afficherIdee(idee)
+  });
+
 }
 
 chargerIdees(); // appelée au démarrage
 
 
 // Fonction pour éditer une idée
-function editerIdee(id) {
-  const idee = ideas.find((i) => {
-    return i.id === id;
-  });
-  document.getElementById("Titre").value = idee.titre;
-  document.getElementById("Categorie").value = idee.categorie;
-  document.getElementById("Description").value = idee.description;
+async function editerIdee(id) {
+  const {data, error} = await supabaseClient
+  .from('sunu-idee')
+  .select('*')
+  .eq('id',id)
+  .single()
+
+  if(error){
+    console.error('erreur edition', error);
+    return;
+  }
+
+  document.getElementById("Titre").value = data.titre;
+  document.getElementById("Categorie").value = data.categorie;
+  document.getElementById("Description").value = data.description;
+
   idEnEdition = id;
+
 }
 
-function supprimerIdee(id) {
-  if (confirm("Êtes-vous sûr de vouloir supprimer cette idée ?")) {
-    // Supprime l'idée du tableau et met à jour le localStorage
-    ideas = ideas.filter((idee) => idee.id !== id);
-    localStorage.setItem("ideas", JSON.stringify(ideas));
+async function supprimerIdee(id) {
+  const confimation = confirm('etes vous sûre de vouloir supprimer cette idée');
 
-    // Recharge le mur des idées
-    murIdees.innerHTML = "";
-    ideas.forEach((idee) => {
-      afficherIdee(idee);
-    });
-  }
+  if(!confimation) return;
+
+
+ const {error} = await supabaseClient
+ .from('sunu-idee')
+ .delete()
+ .eq('id',id)
+
+ if(error){
+  console.error('erreur de suppression', error);
+  return;
+ }
+
+ await chargerIdees();
 }
 
 
@@ -141,17 +178,17 @@ btnIA.addEventListener("click", async () => {
     btnIA.disabled = true;
     btnIA.textContent = "Génération...";
 
-    const response = await fetch(
-    "http://localhost:11434/api/generate",
-    {
+    const response = await fetch("/api/ai",{
+      
       method: "POST",
-      headers: {
+      headers: {"Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama3:latest",
-        prompt: `
-      Tu es un assistant pour une boîte à idées.
+        model: "google/gemma-4-31b-it:freeze-2024-06-01",
+        messages: [{
+        role: "user",
+        content:`
 
     Titre : ${titre}
 
@@ -174,17 +211,28 @@ btnIA.addEventListener("click", async () => {
 
     Categorie
     Description
-  `,
-          stream: false
+  `
+      }
+    ],
+
+     "reasoning": {"enabled": true}
+      
         })
       }
     );
 
-    
+    console.log("Status :", response.status);
+
+if (!response.ok) {
+  const errorText = await response.text();
+  console.error(errorText);
+  throw new Error(errorText);
+}
 
     const data = await response.json();
+    console.log(data)
 
-    const lignes = data.response.trim().split("\n");
+    const lignes = data.choices[0].message.content.trim().split("\n");
 
     document.getElementById("Categorie").value =
       lignes[0].trim();
@@ -192,9 +240,11 @@ btnIA.addEventListener("click", async () => {
     document.getElementById("Description").value =
       lignes.slice(1).join(" ").trim();
 
+      //apres generation ça permet de desactiver le champ categorie met si l'ia se trompe impossible de modifier le champ categorie
+    // document.getElementById("Categorie").disabled = true;  
     } catch (error) {
 
-    console.error(error);
+    console.error(error.message);
 
     alert(
       "Erreur lors de la communication avec Ollama"
@@ -210,3 +260,4 @@ btnIA.addEventListener("click", async () => {
   
 
 });
+
