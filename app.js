@@ -168,7 +168,6 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
     const response = await fetch("/api/ai", {
       method: "POST",
       headers: { 
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
