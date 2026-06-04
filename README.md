@@ -11,7 +11,7 @@ et la description d'une idée.
 ---
 
 ## Lien de déploiement
-[Voir l'application](https://sunu-idee-enmi.vercel.app/)
+[Voir l'application](https://sunu-idee-cg9x.vercel.app/)
 
 ---
 
