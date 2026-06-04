@@ -163,7 +163,7 @@ document.getElementById("btnSuggerer").addEventListener("click", async function 
   document.getElementById("btnSuggerer").textContent = "⏳ L'IA génère une suggestion...";
   document.getElementById("btnSuggerer").disabled = true;
 
-  // Appelle l'API Ollama pour générer une suggestion basée sur le titre
+  // Appelle l'API openrouter pour générer une suggestion basée sur le titre
   try {
     const response = await fetch("/api/ai", {
       method: "POST",

@@ -11,10 +11,11 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    res.status(200).json(data);
+    res.status(200).json(data); // Renvoie la réponse de l'API OPENROUTER au client
 
   } catch (error) {
     res.status(500).json({ error: "Erreur serveur" });
   }
 }
+
 
